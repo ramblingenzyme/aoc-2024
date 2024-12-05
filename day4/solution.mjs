@@ -53,6 +53,7 @@ let xmas_results = map_grid(grid, (char, coord) =>
     : []
 ).filter((x) => x === SEARCH_STRING);
 
+// 2554
 console.log(xmas_results.length);
 
 /* Part 2 */
@@ -90,4 +91,5 @@ let x_mas_results = map_grid(grid, (char, coord) => {
   return results.filter(is_mas).length === 2;
 }).filter((x) => x === true).length;
 
+// 1916
 console.log(x_mas_results);
