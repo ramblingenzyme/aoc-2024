@@ -1,59 +1,55 @@
 import fs from "node:fs";
 
-const input = fs.readFileSync("./input.txt").toString();
-
-const [rawOrderRules, rawUpdates] = input.split("\n\n");
+const [rawOrderRules, rawUpdates] = fs
+  .readFileSync("./input.txt")
+  .toString()
+  .split("\n\n");
 
 const orderRules = rawOrderRules
   .trim()
   .split("\n")
-  .reduce((obj, str) => {
-    const [left, right] = str.split("|").map((s) => parseInt(s, 10));
-    obj[left] = (obj[left] || new Set()).add(right);
-
-    return obj;
-  }, {});
+  .map((str) => str.split("|").map((s) => parseInt(s, 10)))
+  .reduce((obj, [l, r]) => ((obj[l] = (obj[l] || new Set()).add(r)), obj), {});
 
 const updates = rawUpdates
   .trim()
   .split("\n")
   .map((l) => l.split(",").map((s) => parseInt(s, 10)));
 
-const sumMiddlePages = (updates) =>
-  updates.reduce(
-    (sum, update) => sum + update[Math.floor(update.length / 2)],
-    0
+const sum = (arr) => arr.reduce((s, x) => s + x, 0);
+const arrayMiddle = (arr) => arr[Math.floor(arr.length / 2)];
+const sumMiddlePages = (updates) => sum(updates.map(arrayMiddle));
+
+const isValidPage = (page, i, update) =>
+  orderRules[page]
+    ? new Set(update.slice(0, i)).isDisjointFrom(orderRules[page])
+    : true;
+
+const isValidUpdate = (update) => update.every(isValidPage);
+
+const splitByValidity = (update) => [
+  update.filter(isValidPage),
+  update.filter((...args) => !isValidPage(...args)),
+];
+
+const findFixedLocation = (invalidPage, update) =>
+  update.findIndex((page) => orderRules[invalidPage].has(page));
+
+const fixSplitUpdate = ([validPages, invalidPages]) =>
+  invalidPages.reduce(
+    (update, invalidPage) =>
+      update.toSpliced(findFixedLocation(invalidPage, update), 0, invalidPage),
+    validPages
   );
-
-const isValidPage = (page, i, update) => {
-    const rule = orderRules[page];
-    const lookBehind = new Set(update.slice(0, i));
-
-    return rule ? lookBehind.isDisjointFrom(rule) : true;
-}
-
-const isValidUpdate = (update) =>
-  update.every(isValidPage);
 
 // 5732
 console.log(sumMiddlePages(updates.filter(isValidUpdate)));
 
-const fixedUpdates = updates
-  .filter((update) => !isValidUpdate(update))
-  .map((invalidUpdate) => {
-    const updateSet = new Set(invalidUpdate);
-
-    const withoutInvalidPages = invalidUpdate.filter(isValidPage)
-    const invalidPages = updateSet.difference(new Set(withoutInvalidPages))
-
-    for (const invalidPage of invalidPages) {
-      const rule = orderRules[invalidPage];
-      const idx = withoutInvalidPages.findIndex(page => rule.has(page))
-      withoutInvalidPages.splice(idx, 0, invalidPage)
-    }
-
-    return withoutInvalidPages
-  });
-
 // 4716
-console.log(sumMiddlePages(fixedUpdates))
+console.log(
+  sumMiddlePages(
+    updates
+      .filter((update) => !isValidUpdate(update))
+      .map((update) => fixSplitUpdate(splitByValidity(update)))
+  )
+);
