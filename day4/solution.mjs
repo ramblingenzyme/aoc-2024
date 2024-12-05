@@ -2,10 +2,10 @@ import fs from "node:fs";
 
 let input = fs.readFileSync("./input.txt", "utf-8");
 let grid = input.split("\n").map((line) => line.split(""));
-let gridDimensions = [grid[0].length, grid.length];
+let grid_dimensions = [grid[0].length, grid.length];
 
-let isValidX = (x) => 0 <= x && x <= gridDimensions[0];
-let isValidY = (y) => 0 <= y && y <= gridDimensions[1];
+let is_valid_x = (x) => 0 <= x && x <= grid_dimensions[0];
+let is_valid_y = (y) => 0 <= y && y <= grid_dimensions[1];
 
 let vectors = [
   [-1, -1],
@@ -21,13 +21,13 @@ let vectors = [
   [1, 1],
 ];
 
-let followVector = (origin, [dx, dy], len, grid) => {
+let follow_vector = (origin, [dx, dy], len, grid) => {
   const results = [];
   let cursor = [...origin];
 
   while (results.length < len) {
     const [cx, cy] = cursor;
-    if (!isValidX(cx) || !isValidY(cy)) {
+    if (!is_valid_x(cx) || !is_valid_y(cy)) {
       break;
     }
 
@@ -41,22 +41,22 @@ let followVector = (origin, [dx, dy], len, grid) => {
 
 const SEARCH_STRING = "XMAS";
 
-let mapGrid = (grid, fn) =>
+let map_grid = (grid, fn) =>
   grid.flatMap((line, x) => line.flatMap((char, y) => fn(char, [x, y])));
 
 /* Part 1 */
-let xmasResults = mapGrid(grid, (char, coord) =>
+let xmas_results = map_grid(grid, (char, coord) =>
   char === SEARCH_STRING[0]
     ? vectors.map((d) =>
-        followVector(coord, d, SEARCH_STRING.length, grid)
+        follow_vector(coord, d, SEARCH_STRING.length, grid)
       )
     : []
 ).filter((x) => x === SEARCH_STRING);
 
-console.log(xmasResults.length);
+console.log(xmas_results.length);
 
 /* Part 2 */
-let diagonalVectors = [
+let diagonal_vectors = [
   [-1, -1],
   [-1, 1],
   [1, -1],
@@ -65,29 +65,29 @@ let diagonalVectors = [
 
 const MAS_SEARCH_LENGTH = 2;
 
-let isMas = ({ d: [dx, dy], r }, _, rarr) => {
+let is_mas = ({ d: [dx, dy], r }, _, rarr) => {
   if (r === "AS") {
-    let inverseVector = [0 - dx, 0 - dy];
-    let inverseResult = rarr.find(
+    let iv = [0 - dx, 0 - dy];
+    let ir = rarr.find(
       ({ d: [rdx, rdy] }) =>
-        rdx === inverseVector[0] && rdy === inverseVector[1]
+        rdx === iv[0] && rdy === iv[1]
     );
 
-    return inverseResult.r === "AM";
+    return ir.r === "AM";
   }
 };
 
-let x_MasResults = mapGrid(grid, (char, coord) => {
+let x_mas_results = map_grid(grid, (char, coord) => {
   if (char !== "A") {
     return false;
   }
 
-  let results = diagonalVectors.map((d) => ({
+  let results = diagonal_vectors.map((d) => ({
     d,
-    r: followVector(coord, d, MAS_SEARCH_LENGTH, grid),
+    r: follow_vector(coord, d, MAS_SEARCH_LENGTH, grid),
   }));
 
-  return results.filter(isMas).length === 2;
+  return results.filter(is_mas).length === 2;
 }).filter((x) => x === true).length;
 
-console.log(x_MasResults);
+console.log(x_mas_results);
