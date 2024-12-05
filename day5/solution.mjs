@@ -5,13 +5,13 @@ const [rawOrderRules, rawUpdates] = fs
   .toString()
   .split("\n\n");
 
-const orderRules = rawOrderRules
+const ORDER_RULES = rawOrderRules
   .trim()
   .split("\n")
   .map((str) => str.split("|").map((s) => parseInt(s, 10)))
   .reduce((obj, [l, r]) => ((obj[l] = (obj[l] || new Set()).add(r)), obj), {});
 
-const updates = rawUpdates
+const UPDATES = rawUpdates
   .trim()
   .split("\n")
   .map((l) => l.split(",").map((s) => parseInt(s, 10)));
@@ -21,8 +21,8 @@ const arrayMiddle = (arr) => arr[Math.floor(arr.length / 2)];
 const sumMiddlePages = (updates) => sum(updates.map(arrayMiddle));
 
 const isValidPage = (page, i, update) =>
-  orderRules[page]
-    ? new Set(update.slice(0, i)).isDisjointFrom(orderRules[page])
+  ORDER_RULES[page]
+    ? new Set(update.slice(0, i)).isDisjointFrom(ORDER_RULES[page])
     : true;
 
 const isValidUpdate = (update) => update.every(isValidPage);
@@ -33,7 +33,7 @@ const splitByValidity = (update) => [
 ];
 
 const findFixedLocation = (invalidPage, update) =>
-  update.findIndex((page) => orderRules[invalidPage].has(page));
+  update.findIndex((page) => ORDER_RULES[invalidPage].has(page));
 
 const fixSplitUpdate = ([validPages, invalidPages]) =>
   invalidPages.reduce(
@@ -43,12 +43,12 @@ const fixSplitUpdate = ([validPages, invalidPages]) =>
   );
 
 // 5732
-console.log(sumMiddlePages(updates.filter(isValidUpdate)));
+console.log(sumMiddlePages(UPDATES.filter(isValidUpdate)));
 
 // 4716
 console.log(
   sumMiddlePages(
-    updates
+    UPDATES
       .filter((update) => !isValidUpdate(update))
       .map((update) => fixSplitUpdate(splitByValidity(update)))
   )
