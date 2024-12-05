@@ -5,7 +5,7 @@ const input = fs.readFileSync("./input.txt", "utf-8");
 const lists = input
   .trim()
   .split("\n")
-  .map((s) => s.split(",").map((s) => Number.parseInt(s, 10)))
+  .map((s) => s.split("   ").map((s) => Number.parseInt(s, 10)))
   .reduce(
     (lists, [l1, l2]) => (lists[0].push(l1), lists[1].push(l2), lists),
     [[], []]
